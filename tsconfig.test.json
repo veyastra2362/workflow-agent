@@ -13,6 +13,10 @@
     "src/policy/**/*.ts",
     "src/persistence/**/*.ts",
     "src/shared/**/*.ts",
-    "tests/**/*.ts"
-  ]
+    "tests/helpers.ts",
+    "tests/unit/**/*.ts",
+    "tests/integration/**/*.ts",
+    "tests/security/**/*.ts"
+  ],
+  "exclude": ["tests/e2e/**"]
 }

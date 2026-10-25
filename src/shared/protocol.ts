@@ -51,8 +51,8 @@ export type IpcChannel = (typeof IPC)[keyof typeof IPC];
 export interface StartTaskInput {
   goal: string;
   acceptance?: string;
-  /** 留空字段表示沿用主进程内存中已保存的模型配置 */
-  modelConfig: Partial<ModelConfig>;
+  /** 不传 = 使用设置中已保存的模型配置 */
+  modelConfig?: Partial<ModelConfig>;
 }
 
 /**

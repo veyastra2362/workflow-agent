@@ -97,8 +97,8 @@ export default function App(): ReactNode {
     try {
       const { taskId } = await window.api.startTask({
         goal,
-        acceptance: acceptance.trim() || undefined,
-        modelConfig: {} // 留空 = 使用设置中已保存的模型配置
+        acceptance: acceptance.trim() || undefined
+        // 不传 modelConfig = 使用设置中已保存的模型配置
       });
       setActiveTaskId(taskId);
       setDetail(null);
