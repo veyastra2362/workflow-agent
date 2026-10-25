@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
 import type { Client } from '@modelcontextprotocol/client';
 import { Client as McpClient } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
@@ -182,12 +185,59 @@ export class McpManager {
     }
   }
 
+  /**
+   * 检查命令在生产环境中是否可执行（Stage 5.1）。
+   * - 绝对路径：检查文件存在
+   * - 相对路径/裸名：通过 where（Windows）或 which（Unix）查找
+   * 返回 null 表示可用；否则返回用户可理解的诊断信息。
+   */
+  private checkCommandAvailable(command: string, cwd?: string): string | null {
+    const isAbsolute = /^[A-Za-z]:[\\/]/.test(command) || command.startsWith('/');
+    if (isAbsolute) {
+      if (!fs.existsSync(command)) {
+        return `可执行文件不存在：${command}。请确认路径正确。`;
+      }
+      return null;
+    }
+    // 裸名或相对路径 → PATH 查找
+    try {
+      execSync(`where "${command}" 2>nul`, { cwd: cwd || process.cwd(), stdio: 'pipe', timeout: 3000 });
+      return null;
+    } catch {
+      // where 失败 → 检查是否是常见运行时缺失
+      const hints: Array<[RegExp, string]> = [
+        [/^node$/, '未找到 node。此 MCP 服务器需要 Node.js 运行时。请从 https://nodejs.org 安装后重试。'],
+        [/^npx$/, '未找到 npx。此 MCP 服务器需要 Node.js（含 npm）。请从 https://nodejs.org 安装后重试。'],
+        [/^python$/, '未找到 python。此 MCP 服务器需要 Python。请从 https://python.org 安装后重试。'],
+        [/^uv$/, '未找到 uv。此 MCP 服务器需要 uv 包管理器。请运行 pip install uv 或参考 https://docs.astral.sh/uv/'],
+        [/^bun$/, '未找到 bun。此 MCP 服务器需要 Bun 运行时。请从 https://bun.sh 安装。'],
+        [/^deno$/, '未找到 deno。此 MCP 服务器需要 Deno 运行时。请从 https://deno.land 安装。']
+      ];
+      for (const [re, hint] of hints) {
+        if (re.test(command)) return hint;
+      }
+      return `命令 "${command}" 在 PATH 中未找到。请确认：1) 已安装对应程序；2) 其所在目录已加入系统 PATH；3) 或使用完整路径配置。`;
+    }
+  }
+
   private async connect(id: string): Promise<void> {
     const state = this.servers.get(id);
     if (!state || this.closed) return;
     state.status = 'connecting';
     state.error = undefined;
     this.emitStatus();
+
+    // 生产环境命令可用性预检（Stage 5.1）
+    const cmdError = this.checkCommandAvailable(state.config.command, state.config.cwd);
+    if (cmdError) {
+      state.status = 'error';
+      state.error = cmdError;
+      state.tools = [];
+      this.opts.logger?.warn('mcp.command.unavailable', { server: state.config.name, command: state.config.command, reason: cmdError });
+      this.emitStatus();
+      return;
+    }
+
     try {
       const client = new McpClient({ name: 'workflow-agent', version: '0.1.0' });
       const transport = new StdioClientTransport({

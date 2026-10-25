@@ -9,3 +9,9 @@ Thumbs.db
 .mcp-probe/
 .tlsprobe/
 *.tsbuildinfo
+release/
+build/
+*.sha256
+*.blockmap
+builder-debug.yml
+latest.yml

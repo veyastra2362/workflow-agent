@@ -2,7 +2,12 @@
   "name": "workflow-agent",
   "version": "0.1.0",
   "private": true,
-  "description": "本地优先的通用工作流 Agent —— Electron 桌面应用（MVP）",
+  "description": "本地优先的通用工作流 Agent 桌面应用",
+  "author": "veyastra2362",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/veyastra2362/workflow-agent.git"
+  },
   "main": "dist/main/index.js",
   "scripts": {
     "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit",
@@ -14,7 +19,10 @@
     "dev": "pnpm build && electron .",
     "smoke": "node scripts/smoke.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dist": "pnpm build && electron-builder --win --x64",
+    "dist:dir": "pnpm build && electron-builder --win --x64 --dir",
+    "smoke:dist": "node scripts/smoke-dist.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.4.0",
@@ -33,6 +41,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^37.0.0",
+    "electron-builder": "^26.18.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",

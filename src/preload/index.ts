@@ -34,6 +34,8 @@ const CHANNELS = {
   mcpSave: 'mcp:save',
   mcpDelete: 'mcp:delete',
   mcpReconnect: 'mcp:reconnect',
+  browserCheck: 'browser:check',
+  browserInstall: 'browser:install',
   onTaskEvent: 'event:taskEvent'
 } as const;
 
@@ -63,6 +65,8 @@ const api: ZcodeApi = {
   saveMcpServer: (input) => invoke(CHANNELS.mcpSave, input),
   deleteMcpServer: (id) => invoke(CHANNELS.mcpDelete, { id }),
   reconnectMcpServer: (id) => invoke(CHANNELS.mcpReconnect, { id }),
+  browserCheckInstall: () => invoke(CHANNELS.browserCheck),
+  browserInstallChromium: () => invoke(CHANNELS.browserInstall),
   onTaskEvent: (cb: (event: TaskEvent) => void) => {
     const handler = (_e: unknown, event: TaskEvent): void => cb(event);
     ipcRenderer.on(CHANNELS.onTaskEvent, handler as never);

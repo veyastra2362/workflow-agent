@@ -41,6 +41,8 @@ export const IPC = {
   mcpSave: 'mcp:save',
   mcpDelete: 'mcp:delete',
   mcpReconnect: 'mcp:reconnect',
+  browserCheck: 'browser:check',
+  browserInstall: 'browser:install',
   onTaskEvent: 'event:taskEvent'
 } as const;
 
@@ -91,6 +93,10 @@ export interface ZcodeApi {
   saveMcpServer(input: McpServerConfig): Promise<{ servers: McpServerStatusInfo[]; rejected: McpToolRejection[] }>;
   deleteMcpServer(id: string): Promise<{ servers: McpServerStatusInfo[]; rejected: McpToolRejection[] }>;
   reconnectMcpServer(id: string): Promise<McpServerStatusInfo | null>;
+  /** 检测 Chromium 是否已安装（不启动浏览器、不下载） */
+  browserCheckInstall(): Promise<{ installed: boolean; browsersPath: string; error?: string }>;
+  /** 用户主动触发 Chromium 下载（约 150MB；返回后可再调 browserCheckInstall 确认） */
+  browserInstallChromium(): Promise<{ ok: boolean; error?: string }>;
   /** 订阅任务事件推送，返回取消订阅函数 */
   onTaskEvent(cb: (event: TaskEvent) => void): () => void;
 }

@@ -6,6 +6,7 @@ import { describeModelError } from '../gateway/types';
 import { redactSecrets } from '../policy/redact';
 import { auditParamValues, renderTemplate, validateTemplate } from '../core/templates';
 import { createDefaultRegistry } from '../tools';
+import { checkChromiumInstalled, downloadChromium } from '../tools/browser/chromium-install';
 import { mcpServerConfigSchema } from '../tools/mcp/validate-config';
 import type { McpManager } from '../tools/mcp/manager';
 import type { PersistedSettings } from '../shared/types';
@@ -398,4 +399,32 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     if (!parsed.success) throw new Error('参数不合法');
     return mcpManager.reconnect(parsed.data.id);
   });
+
+  // ---------- Chromium 按需安装（Stage 5.1） ----------
+
+  ipcMain.handle(IPC.browserCheck, () => {
+    const status = checkChromiumInstalled();
+    return { installed: status.installed, browsersPath: status.browsersPath, error: status.error };
+  });
+
+  ipcMain.handle(IPC.browserInstall, async () => {
+    logger.info('browser.chromium.install.started', { browsersPath: getBrowsersPathSafe() });
+    const result = await downloadChromium();
+    if (result.ok) {
+      logger.info('browser.chromium.install.done');
+    } else {
+      logger.warn('browser.chromium.install.failed', { error: result.error });
+    }
+    return result;
+  });
+}
+
+function getBrowsersPathSafe(): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getBrowsersPath } = require('../tools/browser/chromium-install') as typeof import('../tools/browser/chromium-install');
+    return getBrowsersPath();
+  } catch {
+    return 'unknown';
+  }
 }

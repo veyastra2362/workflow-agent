@@ -21,6 +21,9 @@ export function SettingsView({ onSaved }: { onSaved: (s: AppSettings) => void })
   const [searchKey, setSearchKey] = useState('');
   const [webMsg, setWebMsg] = useState<string | null>(null);
   const [browserEnabled, setBrowserEnabled] = useState(false);
+  const [chromiumStatus, setChromiumStatus] = useState<{ installed: boolean; browsersPath: string } | null>(null);
+  const [chromiumInstalling, setChromiumInstalling] = useState(false);
+  const [chromiumMsg, setChromiumMsg] = useState<string | null>(null);
   const [mcpServers, setMcpServers] = useState<Array<{ id: string; name: string; status: string; toolCount: number; error?: string }>>([]);
   const [mcpMsg, setMcpMsg] = useState<string | null>(null);
   const [mcpForm, setMcpForm] = useState<{ id?: string; name: string; command: string; args: string; env: string; enabled: boolean } | null>(null);
@@ -148,6 +151,7 @@ export function SettingsView({ onSaved }: { onSaved: (s: AppSettings) => void })
 
   useEffect(() => {
     void refreshMcp();
+    void window.api.browserCheckInstall().then(setChromiumStatus).catch(() => undefined);
   }, []);
 
   const saveWeb = async (): Promise<void> => {
@@ -270,6 +274,46 @@ export function SettingsView({ onSaved }: { onSaved: (s: AppSettings) => void })
             </span>
           </span>
         </label>
+        {/* Chromium 安装状态 */}
+        {chromiumStatus && (
+          <div className="flex items-center justify-between rounded-md border border-zinc-800 px-3 py-2">
+            <div>
+              <div className="text-sm text-zinc-300">
+                {chromiumStatus.installed ? '✓ Chromium 已安装' : '✗ Chromium 未安装'}
+              </div>
+              {!chromiumStatus.installed && (
+                <div className="text-xs text-zinc-500">
+                  浏览器自动化需要 Chromium（约 150MB）。下载到 {chromiumStatus.browsersPath}
+                </div>
+              )}
+            </div>
+            {!chromiumStatus.installed && (
+              <Btn
+                variant="primary"
+                disabled={chromiumInstalling}
+                onClick={async () => {
+                  setChromiumInstalling(true);
+                  setChromiumMsg('正在下载 Chromium...');
+                  try {
+                    const r = await window.api.browserInstallChromium();
+                    setChromiumMsg(r.ok ? 'Chromium 安装完成并验证可用' : `安装失败：${r.error}`);
+                    if (r.ok) {
+                      const s = await window.api.browserCheckInstall();
+                      setChromiumStatus(s);
+                    }
+                  } catch (err) {
+                    setChromiumMsg(`安装失败：${err instanceof Error ? err.message : String(err)}`);
+                  } finally {
+                    setChromiumInstalling(false);
+                  }
+                }}
+              >
+                {chromiumInstalling ? '下载中...' : '下载 Chromium'}
+              </Btn>
+            )}
+          </div>
+        )}
+        {chromiumMsg && <div className="text-xs text-zinc-400">{chromiumMsg}</div>}
         <div className="flex items-center gap-3">
           <Btn variant="primary" onClick={saveWeb} disabled={saving}>
             保存联网设置

@@ -107,7 +107,11 @@ app.whenReady().then(async () => {
     });
 
     const prompt = loadSystemPrompt([
+      // 打包后：extraResources 中的 prompts 目录（asar 外，可读）
+      ...(app.isPackaged ? [path.join(process.resourcesPath, 'prompts', 'system.md')] : []),
+      // 开发环境：项目源码目录
       path.join(app.getAppPath(), 'prompts', 'system.md'),
+      // 开发环境回退：编译产物相对路径
       path.join(__dirname, '../../prompts/system.md')
     ]);
     logger.info('app.start', {

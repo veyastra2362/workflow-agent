@@ -1,0 +1,59 @@
+# electron-builder 配置（Stage 5.1）
+# 使用：npx electron-builder --win --x64 [--dir 仅生成免安装目录]
+appId: com.veyastra2362.workflow-agent
+productName: Workflow Agent
+copyright: Copyright © 2026
+
+directories:
+  output: release
+  buildResources: build
+
+# 打包文件：主进程/preload/renderer 编译产物 + 运行时依赖 + package.json
+# pnpm 的 node_modules 使用 symlink；electron-builder 26 支持 pnpm 的 hoisted 模式
+files:
+  - dist/**/*
+  - package.json
+  - "!dist/renderer/assets/*.map"
+  - "!*.md"
+  - "!src/**"
+  - "!tests/**"
+  - "!scripts/**"
+  - "!prompts/**"
+  - "!release/**"
+  - "!.github/**"
+  - "!.zcode/**"
+
+# prompts 放在 asar 外（extraResources），主进程通过 process.resourcesPath 读取
+extraResources:
+  - from: prompts
+    to: prompts
+    filter:
+      - "**/*.md"
+
+# electron-builder 默认打包 production 依赖（node_modules 中 dependencies 字段的包）
+# 不需要额外配置——它自动处理 pnpm 的 symlink
+
+asar: true
+asarUnpack:
+  - "**/*.node"
+
+compression: normal
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: "${productName}-${version}-setup.${ext}"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Workflow Agent
+  # 卸载时不删除用户数据（NSIS 默认不清理 %APPDATA%）
+  deleteAppDataOnUninstall: false
+  # 安装完成后不自动运行（用户手动启动，避免开发环境误启动）
+  runAfterFinish: false
+  # 包含体系结构
+  include: build/installer.nsh
