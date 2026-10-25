@@ -1,0 +1,6 @@
+# 单 package 项目；此文件同时承载 pnpm v11 的依赖脚本安全设置。
+# electron 需要下载二进制，esbuild 需要安装平台二进制，playwright 需要下载 Chromium —— 均为本项目必需。
+allowBuilds:
+  electron: true
+  esbuild: true
+  playwright: true

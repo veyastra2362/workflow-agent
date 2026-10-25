@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"],
+    "sourceMap": false
+  },
+  "include": [
+    "src/main/**/*.ts",
+    "src/preload/**/*.ts",
+    "src/core/**/*.ts",
+    "src/gateway/**/*.ts",
+    "src/tools/**/*.ts",
+    "src/policy/**/*.ts",
+    "src/persistence/**/*.ts",
+    "src/shared/**/*.ts"
+  ]
+}

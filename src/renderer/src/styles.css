@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-zinc-950);
+  color: var(--color-zinc-200);
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+code,
+pre,
+.mono {
+  font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-zinc-700);
+  border-radius: 6px;
+  border: 2px solid var(--color-zinc-950);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-zinc-600);
+}
+
+textarea,
+input,
+select {
+  outline: none;
+}
